@@ -87,9 +87,10 @@ an entry-not-found message is open are deferred until it closes, also keeping on
 the most recent request. Unsupported or invalid URLs are ignored. Scheme registration
 is currently provided only on macOS.
 
-To build and run the URL parsing and event-delivery tests, configure with
-`-DTAGAINI_BUILD_TESTS=ON`, build the `lookup-url-test` target, and run
-`ctest --test-dir <build directory> --output-on-failure`.
+To build and run the lookup tests, configure with `-DTAGAINI_BUILD_TESTS=ON`,
+build the `lookup-url-test` and `search-lookup-test` targets, and run
+`ctest --test-dir <build directory> --output-on-failure`. The search widget tests
+use a temporary user database and do not load dictionary files at runtime.
 
 ## Building on Linux
 

@@ -124,6 +124,18 @@ void SearchWidget::goNext() {
 
 void SearchWidget::resetSearch() { _searchBuilder.reset(); }
 
+void SearchWidget::searchText(const QString &text) {
+    QMap<QString, QVariant> textState;
+    textState["text"] = text;
+    QMap<QString, QVariant> state;
+    state["searchtext"] = textState;
+    // Restore defaults and text without emitting an intermediate empty search.
+    // Besides unnecessary work, that temporary history item can erase the
+    // previous search when the same lookup is requested more than once.
+    _searchBuilder.restoreState(state);
+    _searchBuilder.runSearch();
+}
+
 void SearchWidget::addSearchFilter(SearchFilterWidget *sWidget) {
     if (_searchBuilder.contains(sWidget->name()))
         return;
