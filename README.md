@@ -48,6 +48,35 @@ Creative Commons Attribution-Share Alike 3.0 license.
 - Print feature with connections between studied kanji and vocabulary, in a format that allows both
   studying and use as flashcards.
 
+## Dictionary links on macOS
+
+Other apps, Shortcuts, and scripts can open Tagaini Jisho with these URLs:
+
+- `tagaini://search?q=<text>` starts a search with the existing search UI.
+  Previous search filters are reset so they do not hide matches.
+- `tagaini://word/<JMdict sequence number>` opens that entry in the detailed view.
+  A message is shown if the entry is absent from the installed dictionary.
+
+Percent-encode the query value as UTF-8. For example, to look up 勉強:
+
+```sh
+open 'tagaini://search?q=%E5%8B%89%E5%BC%B7'
+```
+
+The routes follow [Nihongo's dictionary URL conventions](https://nihongo-app.com/faq/#app-links).
+The word route accepts a JMdict sequence number, not text or a result index.
+Search text follows the same syntax as typing in Tagaini's search field.
+
+macOS opens the installed app bundle, or forwards the URL to the running app.
+The main window is brought forward without using the clipboard. A lookup received
+while the app initializes is deferred until the dictionaries and UI are ready;
+if several arrive during startup, the most recent is used. Unsupported or invalid
+URLs are ignored. Scheme registration is currently provided only on macOS.
+
+To build and run the URL parsing and event-delivery tests, configure with
+`-DTAGAINI_BUILD_TESTS=ON`, build the `lookup-url-test` target, and run
+`ctest --test-dir <build directory> --output-on-failure`.
+
 ## Building on Linux
 
 The only runtime dependency to run Tagaini Jisho is Qt 6.4 or higher. In order to build it, you

@@ -77,6 +77,13 @@ add_subdirectory(i18n)
 # Source code
 add_subdirectory(src)
 
+# Optional URL parsing and event-delivery tests.
+option(TAGAINI_BUILD_TESTS "Build Tagaini tests" OFF)
+if(TAGAINI_BUILD_TESTS)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+
 # Docs
 add_subdirectory(doc)
 

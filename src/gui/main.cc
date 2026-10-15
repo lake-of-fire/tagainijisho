@@ -26,11 +26,15 @@
 #include "core/Plugin.h"
 #include "core/Preferences.h"
 #include "core/Tag.h"
+#include "core/jmdict/JMdictEntry.h"
 #include "core/jmdict/JMdictPlugin.h"
 #include "core/kanjidic2/Kanjidic2Plugin.h"
 // #include "core/tatoeba/TatoebaPlugin.h"
+#include "gui/LookupApplication.h"
+#include "gui/LookupUrl.h"
 #include "gui/MainWindow.h"
 #include "gui/PreferencesWindow.h"
+#include "gui/TextFilterWidget.h"
 
 #include "core/jmdict/JMdictPlugin.h"
 #include "core/kanjidic2/Kanjidic2Plugin.h"
@@ -224,7 +228,7 @@ int main(int argc, char *argv[]) {
 
     // Seed the random number generator
     QRandomGenerator(QDateTime::currentDateTime().toSecsSinceEpoch());
-    QApplication app(argc, argv);
+    LookupApplication app(argc, argv);
 
     // Enable auto-mnemonics for Mac OS X. Ideally this would only
     // be called on Mac OS X.
@@ -335,8 +339,49 @@ int main(int argc, char *argv[]) {
 
     mainWindow->restoreWholeState();
 
-    // Show the main window and run the program
+    QObject::connect(
+        &app, &LookupApplication::lookupRequested, mainWindow, [mainWindow](const QUrl &url) {
+            const LookupUrl lookup = LookupUrl::parse(url);
+            if (lookup.type == LookupUrl::Invalid)
+                return;
+
+            if (mainWindow->isMinimized())
+                mainWindow->showNormal();
+            else
+                mainWindow->show();
+            mainWindow->raise();
+            mainWindow->activateWindow();
+            if (lookup.type == LookupUrl::Search) {
+                SearchWidget *search = mainWindow->searchWidget();
+                auto *text =
+                    qobject_cast<TextFilterWidget *>(search->getSearchFilter("searchtext"));
+                if (!text)
+                    return;
+                // A previous study/tag/type filter must not hide an external lookup.
+                search->resetSearch();
+                mainWindow->searchDockWidget()->show();
+                search->searchFilters()->showWidget(text);
+                text->setText(lookup.text);
+                text->setFocus();
+            } else {
+                const JMdictEntryPointer entry = JMdictEntryRef(lookup.entryId).get();
+                // The loader returns an empty entry for IDs absent from this dictionary.
+                if (!entry ||
+                    (entry->getKanjiReadings().isEmpty() && entry->getKanaReadings().isEmpty())) {
+                    QMessageBox::information(
+                        mainWindow, QObject::tr("Entry not found"),
+                        QObject::tr("JMdict entry %1 is not in the installed dictionary.")
+                            .arg(lookup.entryId));
+                    return;
+                }
+                mainWindow->detailedView()->display(entry);
+            }
+        });
+
+    // Show the main window and run the program. All plugins and restored state
+    // must be ready before delivering a URL received during initialization.
     mainWindow->show();
+    app.setLookupReady();
     int ret = app.exec();
 
     // Remove GUI plugins
