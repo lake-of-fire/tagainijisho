@@ -363,6 +363,7 @@ int main(int argc, char *argv[]) {
                 search->searchFilters()->showWidget(text);
                 text->setText(lookup.text);
                 text->setFocus();
+                text->searchField()->lineEdit()->selectAll();
             } else {
                 const JMdictEntryPointer entry = JMdictEntryRef(lookup.entryId).get();
                 // The loader returns an empty entry for IDs absent from this dictionary.
