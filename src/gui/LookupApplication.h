@@ -11,7 +11,10 @@ class LookupApplication : public QApplication {
     Q_OBJECT
   private:
     bool _lookupReady = false;
+    bool _handlingLookup = false;
     QUrl _pendingLookup;
+
+    void deliverPendingLookup();
 
   protected:
     bool event(QEvent *event) override;

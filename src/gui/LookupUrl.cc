@@ -19,7 +19,7 @@ LookupUrl LookupUrl::parse(const QUrl &url) {
         result.type = Search;
         result.text = items.first().second;
     } else if (url.host() == "word" && !url.hasQuery()) {
-        static const QRegularExpression path("^/([0-9]+)$");
+        static const QRegularExpression path("\\A/([0-9]+)\\z");
         const auto match = path.match(url.path());
         if (!match.hasMatch())
             return result;

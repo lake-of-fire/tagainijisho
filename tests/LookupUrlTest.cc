@@ -46,6 +46,9 @@ class LookupUrlTest : public QObject {
                                   "tagaini://word/4294967296",
                                   "tagaini://word/abc",
                                   "tagaini://word/1/2",
+                                  "tagaini://word/1%0A",
+                                  "tagaini://word/1%0D%0A",
+                                  "tagaini://word/1%00",
                                   "tagaini://word/1?q=test",
                                   "tagaini://word/1#fragment",
                                   "tagaini://search?q=%GG"};
@@ -80,6 +83,37 @@ class LookupUrlTest : public QObject {
         QFileOpenEvent file(QString("/tmp/lookup-test.txt"));
         QCoreApplication::sendEvent(app, &file);
         QCOMPARE(spy.size(), 2);
+        QCoreApplication::sendEvent(app, &invalid);
+        QCOMPARE(spy.size(), 2);
+    }
+
+    void nestedEventDelivery() {
+        auto *app = static_cast<LookupApplication *>(qApp);
+        app->setLookupReady();
+        QList<QUrl> delivered;
+        bool handling = false;
+        bool reentered = false;
+        const auto connection =
+            connect(app, &LookupApplication::lookupRequested, this, [&](const QUrl &url) {
+                if (handling) {
+                    reentered = true;
+                    return;
+                }
+                handling = true;
+                delivered << url;
+                if (delivered.size() == 1) {
+                    // Model URL delivery in a QMessageBox's nested event loop.
+                    QCoreApplication::postEvent(app, new QFileOpenEvent(QUrl("tagaini://word/2")));
+                    QCoreApplication::postEvent(app, new QFileOpenEvent(QUrl("tagaini://word/3")));
+                    QCoreApplication::processEvents();
+                }
+                handling = false;
+            });
+        QFileOpenEvent first(QUrl("tagaini://word/1"));
+        QCoreApplication::sendEvent(app, &first);
+        disconnect(connection);
+        QVERIFY(!reentered);
+        QCOMPARE(delivered, QList<QUrl>({first.url(), QUrl("tagaini://word/3")}));
     }
 };
 

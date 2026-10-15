@@ -70,8 +70,10 @@ Search text follows the same syntax as typing in Tagaini's search field.
 macOS opens the installed app bundle, or forwards the URL to the running app.
 The main window is brought forward without using the clipboard. A lookup received
 while the app initializes is deferred until the dictionaries and UI are ready;
-if several arrive during startup, the most recent is used. Unsupported or invalid
-URLs are ignored. Scheme registration is currently provided only on macOS.
+if several arrive during startup, the most recent is used. Lookups received while
+an entry-not-found message is open are deferred until it closes, also keeping only
+the most recent request. Unsupported or invalid URLs are ignored. Scheme registration
+is currently provided only on macOS.
 
 To build and run the URL parsing and event-delivery tests, configure with
 `-DTAGAINI_BUILD_TESTS=ON`, build the `lookup-url-test` target, and run
