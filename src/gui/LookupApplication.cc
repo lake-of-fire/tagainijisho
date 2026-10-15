@@ -25,8 +25,10 @@ bool LookupApplication::event(QEvent *event) {
         const QUrl url = static_cast<QFileOpenEvent *>(event)->url();
         if (LookupUrl::parse(url).type != LookupUrl::Invalid) {
             // Keep the most recent request during startup or a modal lookup dialog.
-            _pendingLookup = url;
-            deliverPendingLookup();
+            if (!_lookupStopped) {
+                _pendingLookup = url;
+                deliverPendingLookup();
+            }
             event->accept();
             return true;
         }
@@ -35,8 +37,16 @@ bool LookupApplication::event(QEvent *event) {
 }
 
 void LookupApplication::setLookupReady() {
+    if (_lookupStopped)
+        return;
     _lookupReady = true;
     deliverPendingLookup();
+}
+
+void LookupApplication::stopLookups() {
+    _lookupStopped = true;
+    _lookupReady = false;
+    _pendingLookup.clear();
 }
 
 void LookupApplication::deliverPendingLookup() {

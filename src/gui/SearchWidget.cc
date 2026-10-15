@@ -125,6 +125,10 @@ void SearchWidget::goNext() {
 void SearchWidget::resetSearch() { _searchBuilder.reset(); }
 
 void SearchWidget::searchText(const QString &text) {
+    // Cancel the old query even if the replacement cannot build a valid query.
+    // Otherwise the new text can leave unrelated results visible underneath it.
+    _results->abortSearch();
+    _results->clear();
     QMap<QString, QVariant> textState;
     textState["text"] = text;
     QMap<QString, QVariant> state;

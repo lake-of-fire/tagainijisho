@@ -167,6 +167,28 @@ class LookupUrlTest : public QObject {
         QVERIFY(!reentered);
         QCOMPARE(delivered, QList<QUrl>({first.url(), QUrl("tagaini://word/3")}));
     }
+    void stopsDuringShutdown() {
+        auto *app = static_cast<LookupApplication *>(qApp);
+        app->setLookupReady();
+        QSignalSpy spy(app, &LookupApplication::lookupRequested);
+        const auto connection =
+            connect(app, &LookupApplication::lookupRequested, this, [app](const QUrl &) {
+                QFileOpenEvent queued(QUrl("tagaini://word/2"));
+                QCoreApplication::sendEvent(app, &queued);
+                app->stopLookups();
+            });
+        QFileOpenEvent first(QUrl("tagaini://word/1"));
+        QCoreApplication::sendEvent(app, &first);
+        disconnect(connection);
+        // Shutdown drops the request queued inside the active handler.
+        QCOMPARE(spy.size(), 1);
+        QFileOpenEvent late(QUrl("tagaini://word/3"));
+        QCoreApplication::sendEvent(app, &late);
+        QCOMPARE(spy.size(), 1);
+        app->setLookupReady();
+        QCoreApplication::sendEvent(app, &late);
+        QCOMPARE(spy.size(), 1);
+    }
 };
 
 int main(int argc, char **argv) {

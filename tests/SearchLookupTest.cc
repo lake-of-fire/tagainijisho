@@ -72,6 +72,18 @@ class SearchLookupTest : public QObject {
         QCOMPARE(queries.first().first().toString(), query);
     }
 
+    void invalidLookupClearsPreviousResults() {
+        SearchWidget search;
+        search.show();
+        QCoreApplication::processEvents();
+        // Seed an unrendered result: this check concerns list replacement,
+        // so no dictionary entry needs to be loaded.
+        search.resultsList()->addResult(EntryRef());
+        QCOMPARE(search.resultsList()->nbResults(), 1);
+        search.searchText(":unsupported-command");
+        QCOMPARE(search.resultsList()->nbResults(), 0);
+    }
+
     void cleanupTestCase() {
         Tag::cleanup();
         EntryListCache::cleanup();

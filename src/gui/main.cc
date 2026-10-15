@@ -384,6 +384,9 @@ int main(int argc, char *argv[]) {
     mainWindow->show();
     app.setLookupReady();
     int ret = app.exec();
+    // Widget/database teardown can process events. Do not deliver lookups to
+    // a partially destroyed window or plugins during that cleanup.
+    app.stopLookups();
 
     // Remove GUI plugins
     Plugin::removePlugin("kanjidic2GUI");

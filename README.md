@@ -84,8 +84,9 @@ The main window is brought forward without using the clipboard. A lookup receive
 while the app initializes is deferred until the dictionaries and UI are ready;
 if several arrive during startup, the most recent is used. Lookups received while
 an entry-not-found message is open are deferred until it closes, also keeping only
-the most recent request. Unsupported or invalid URLs are ignored. Scheme registration
-is currently provided only on macOS.
+the most recent request. Unsupported or invalid URLs are ignored, as are lookups
+received after shutdown begins. Scheme registration is currently provided only on
+macOS.
 
 To build and run the lookup tests, configure with `-DTAGAINI_BUILD_TESTS=ON`,
 build the `lookup-url-test` and `search-lookup-test` targets, and run

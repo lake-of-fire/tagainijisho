@@ -26,6 +26,7 @@ class LookupApplication : public QApplication {
     Q_OBJECT
   private:
     bool _lookupReady = false;
+    bool _lookupStopped = false;
     bool _handlingLookup = false;
     QUrl _pendingLookup;
 
@@ -37,6 +38,8 @@ class LookupApplication : public QApplication {
   public:
     LookupApplication(int &argc, char **argv) : QApplication(argc, argv) {}
     void setLookupReady();
+    /// Permanently stop delivery before destroying the window and plugins.
+    void stopLookups();
 
   signals:
     void lookupRequested(const QUrl &url);
