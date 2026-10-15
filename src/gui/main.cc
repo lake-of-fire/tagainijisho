@@ -34,7 +34,6 @@
 #include "gui/LookupUrl.h"
 #include "gui/MainWindow.h"
 #include "gui/PreferencesWindow.h"
-#include "gui/TextFilterWidget.h"
 
 #include "core/jmdict/JMdictPlugin.h"
 #include "core/kanjidic2/Kanjidic2Plugin.h"
@@ -352,18 +351,7 @@ int main(int argc, char *argv[]) {
             mainWindow->raise();
             mainWindow->activateWindow();
             if (lookup.type == LookupUrl::Search) {
-                SearchWidget *search = mainWindow->searchWidget();
-                auto *text =
-                    qobject_cast<TextFilterWidget *>(search->getSearchFilter("searchtext"));
-                if (!text)
-                    return;
-                // A previous study/tag/type filter must not hide an external lookup.
-                search->resetSearch();
-                mainWindow->searchDockWidget()->show();
-                search->searchFilters()->showWidget(text);
-                text->setText(lookup.text);
-                text->setFocus();
-                text->searchField()->lineEdit()->selectAll();
+                mainWindow->searchText(lookup.text);
             } else {
                 const JMdictEntryPointer entry = JMdictEntryRef(lookup.entryId).get();
                 // The loader returns an empty entry for IDs absent from this dictionary.

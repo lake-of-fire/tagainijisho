@@ -574,6 +574,18 @@ void MainWindow::display(const QModelIndex &clicked) {
 
 void MainWindow::resetSearch() { searchWidget()->resetSearch(); }
 
+void MainWindow::searchText(const QString &text) {
+    TextFilterWidget *tWidget =
+        qobject_cast<TextFilterWidget *>(searchWidget()->getSearchFilter("searchtext"));
+    if (!tWidget)
+        return;
+    // A previous study/tag/type filter must not hide an external lookup.
+    searchWidget()->resetSearch();
+    searchDockWidget()->show();
+    tWidget->setText(text);
+    focusTextSearch();
+}
+
 void MainWindow::focusTextSearch() {
     TextFilterWidget *tWidget =
         qobject_cast<TextFilterWidget *>(searchWidget()->getSearchFilter("searchtext"));

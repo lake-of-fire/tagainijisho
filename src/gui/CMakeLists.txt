@@ -95,7 +95,7 @@ if(APPLE)
 endif(APPLE)
 
 set(tagainijisho_SRCS main.cc LookupApplication.cc LookupUrl.cc
-                      ${tagainijisho_gui_RC} ${ICON})
+                     ${tagainijisho_gui_RC} ${ICON})
 
 if(WIN32)
   if(MSVC)
