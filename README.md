@@ -56,16 +56,28 @@ Other apps, Shortcuts, and scripts can open Tagaini Jisho with these URLs:
   Previous search filters are reset so they do not hide matches.
 - `tagaini://word/<JMdict sequence number>` opens that entry in the detailed view.
   A message is shown if the entry is absent from the installed dictionary.
+- `tagaini://kanji/<character>` opens one kanji in the existing detailed view,
+  including readings, meanings, stroke order, components, and related vocabulary
+  where available. A message is shown if it is absent from the installed character
+  dictionary. Supplementary Unicode characters are supported.
 
-Percent-encode the query value as UTF-8. For example, to look up 勉強:
+Percent-encode text using UTF-8. These examples search for 勉強, open its word
+entry, and open the kanji 食:
 
 ```sh
 open 'tagaini://search?q=%E5%8B%89%E5%BC%B7'
+open 'tagaini://word/1512670'
+open 'tagaini://kanji/%E9%A3%9F'
 ```
 
 The routes follow [Nihongo's dictionary URL conventions](https://nihongo-app.com/faq/#app-links).
 The word route accepts a JMdict sequence number, not text or a result index.
-Search text follows the same syntax as typing in Tagaini's search field.
+Search text follows the same syntax as typing in Tagaini's search field, including
+Japanese spellings/readings, translated meanings, wildcards, and search commands.
+For example, `tagaini://search?q=%3Ajmdict%20%E5%8B%89%E5%BC%B7` limits the search
+to vocabulary (`:jmdict 勉強`). Romaji conversion and dictionary languages follow
+the user's existing preferences. Direct word and kanji links open the existing
+entry view without changing study status, tags, notes, or clipboard contents.
 
 macOS opens the installed app bundle, or forwards the URL to the running app.
 The main window is brought forward without using the clipboard. A lookup received

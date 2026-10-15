@@ -41,6 +41,28 @@ class LookupUrlTest : public QObject {
         QCOMPARE(lookup.entryId, quint32(1000000));
     }
 
+    void kanji_data() {
+        QTest::addColumn<QString>("url");
+        QTest::addColumn<QString>("character");
+        QTest::addColumn<quint32>("codepoint");
+        QTest::newRow("literal") << QString::fromUtf8("tagaini://kanji/食")
+                                 << QString::fromUtf8("食") << quint32(0x98DF);
+        QTest::newRow("encoded") << QString("tagaini://kanji/%E9%A3%9F") << QString::fromUtf8("食")
+                                 << quint32(0x98DF);
+        QTest::newRow("supplementary") << QString("tagaini://kanji/%F0%A0%AE%B7")
+                                       << QString::fromUtf8("𠮷") << quint32(0x20BB7);
+    }
+
+    void kanji() {
+        QFETCH(QString, url);
+        QFETCH(QString, character);
+        QFETCH(quint32, codepoint);
+        const auto lookup = LookupUrl::parse(QUrl(url, QUrl::StrictMode));
+        QCOMPARE(lookup.type, LookupUrl::Kanji);
+        QCOMPARE(lookup.text, character);
+        QCOMPARE(lookup.entryId, codepoint);
+    }
+
     void invalid_data() {
         QTest::addColumn<QString>("url");
         const QStringList urls = {"https://search?q=test",
@@ -66,6 +88,17 @@ class LookupUrlTest : public QObject {
                                   "tagaini://word/1%00",
                                   "tagaini://word/1?q=test",
                                   "tagaini://word/1#fragment",
+                                  "tagaini://kanji",
+                                  "tagaini://kanji/",
+                                  "tagaini://kanji/%E9%A3%9F%E5%93%81",
+                                  "tagaini://kanji/%E9%A3%9F/extra",
+                                  "tagaini://kanji/%E9%A3%9F?q=test",
+                                  "tagaini://kanji/%E9%A3%9F#fragment",
+                                  "tagaini://kanji/%252F",
+                                  "tagaini://kanji/%2F",
+                                  "tagaini://kanji/%20",
+                                  "tagaini://kanji/%0A",
+                                  "tagaini://kanji/%00",
                                   "tagaini://search?q=%GG"};
         for (const auto &url : urls)
             QTest::newRow(qPrintable(url)) << url;
@@ -95,11 +128,15 @@ class LookupUrlTest : public QObject {
         QCoreApplication::sendEvent(app, &running);
         QCOMPARE(spy.size(), 2);
         QCOMPARE(spy.at(1).at(0).toUrl(), running.url());
+        QFileOpenEvent kanji(QUrl("tagaini://kanji/%E9%A3%9F"));
+        QCoreApplication::sendEvent(app, &kanji);
+        QCOMPARE(spy.size(), 3);
+        QCOMPARE(spy.at(2).at(0).toUrl(), kanji.url());
         QFileOpenEvent file(QString("/tmp/lookup-test.txt"));
         QCoreApplication::sendEvent(app, &file);
-        QCOMPARE(spy.size(), 2);
+        QCOMPARE(spy.size(), 3);
         QCoreApplication::sendEvent(app, &invalid);
-        QCOMPARE(spy.size(), 2);
+        QCOMPARE(spy.size(), 3);
     }
 
     void nestedEventDelivery() {

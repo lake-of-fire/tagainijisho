@@ -23,7 +23,7 @@
 
 /// External lookup routes, independent of the dictionary and window lifetime.
 struct LookupUrl {
-    enum Type { Invalid, Search, Word };
+    enum Type { Invalid, Search, Word, Kanji };
     Type type = Invalid;
     QString text;
     quint32 entryId = 0;

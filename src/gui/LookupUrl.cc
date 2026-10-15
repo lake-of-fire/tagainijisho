@@ -44,6 +44,17 @@ LookupUrl LookupUrl::parse(const QUrl &url) {
             return result;
         result.type = Word;
         result.entryId = id;
+    } else if (url.host() == "kanji" && !url.hasQuery() && url.path().startsWith('/')) {
+        // Count Unicode scalar values, not UTF-16 code units: rare kanji can
+        // occupy a surrogate pair. Decode the path exactly once.
+        const QString character = url.path().mid(1);
+        const auto codepoints = character.toUcs4();
+        if (codepoints.size() != 1 || character == "/" || !QChar::isPrint(codepoints.first()) ||
+            QChar::isSpace(codepoints.first()))
+            return result;
+        result.type = Kanji;
+        result.text = character;
+        result.entryId = codepoints.first();
     }
     return result;
 }

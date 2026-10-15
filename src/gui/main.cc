@@ -28,6 +28,7 @@
 #include "core/Tag.h"
 #include "core/jmdict/JMdictEntry.h"
 #include "core/jmdict/JMdictPlugin.h"
+#include "core/kanjidic2/Kanjidic2Entry.h"
 #include "core/kanjidic2/Kanjidic2Plugin.h"
 // #include "core/tatoeba/TatoebaPlugin.h"
 #include "gui/LookupApplication.h"
@@ -352,7 +353,18 @@ int main(int argc, char *argv[]) {
             mainWindow->activateWindow();
             if (lookup.type == LookupUrl::Search) {
                 mainWindow->searchText(lookup.text);
-            } else {
+            } else if (lookup.type == LookupUrl::Kanji) {
+                const Kanjidic2EntryPointer entry = KanjiEntryRef(lookup.entryId).get();
+                // The loader can synthesize a placeholder for unknown characters.
+                if (!entry || !entry->inDB()) {
+                    QMessageBox::information(
+                        mainWindow, QObject::tr("Entry not found"),
+                        QObject::tr("The character %1 is not in the installed dictionary.")
+                            .arg(lookup.text));
+                    return;
+                }
+                mainWindow->detailedView()->display(entry);
+            } else if (lookup.type == LookupUrl::Word) {
                 const JMdictEntryPointer entry = JMdictEntryRef(lookup.entryId).get();
                 // The loader returns an empty entry for IDs absent from this dictionary.
                 if (!entry ||
