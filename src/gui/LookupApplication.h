@@ -25,8 +25,8 @@
 class LookupApplication : public QApplication {
     Q_OBJECT
   private:
-    bool _lookupReady = false;
-    bool _lookupStopped = false;
+    enum class LookupState { Starting, Ready, Stopped };
+    LookupState _lookupState = LookupState::Starting;
     bool _handlingLookup = false;
     QUrl _pendingLookup;
 

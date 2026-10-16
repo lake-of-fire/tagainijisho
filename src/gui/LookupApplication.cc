@@ -25,7 +25,7 @@ bool LookupApplication::event(QEvent *event) {
         const QUrl url = static_cast<QFileOpenEvent *>(event)->url();
         if (LookupUrl::parse(url).type != LookupUrl::Invalid) {
             // Keep the most recent request during startup or a modal lookup dialog.
-            if (!_lookupStopped) {
+            if (_lookupState != LookupState::Stopped) {
                 _pendingLookup = url;
                 deliverPendingLookup();
             }
@@ -37,20 +37,19 @@ bool LookupApplication::event(QEvent *event) {
 }
 
 void LookupApplication::setLookupReady() {
-    if (_lookupStopped)
+    if (_lookupState == LookupState::Stopped)
         return;
-    _lookupReady = true;
+    _lookupState = LookupState::Ready;
     deliverPendingLookup();
 }
 
 void LookupApplication::stopLookups() {
-    _lookupStopped = true;
-    _lookupReady = false;
+    _lookupState = LookupState::Stopped;
     _pendingLookup.clear();
 }
 
 void LookupApplication::deliverPendingLookup() {
-    if (!_lookupReady || _handlingLookup)
+    if (_lookupState != LookupState::Ready || _handlingLookup)
         return;
     // A missing-entry dialog runs a nested event loop. Defer URLs received there
     // until the current lookup returns, rather than nesting dialogs/handlers.
